@@ -1,7 +1,7 @@
 {
   "name": "node-purified-image",
   "version": "0.1.0",
-  "description": "Wrapper for Pure JS, which is implementation of an image drawing and encoding api, based on HTML Canvas",
+  "description": "Load, save and draw on image with API similar to HTML Canvas Context 2D. No native dependencies.",
   "main": "index.js",
   "scripts": {
     "test": "npm run jshint && npm run jscs && npm run mocha",

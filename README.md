@@ -6,7 +6,7 @@
 
 Load, save and draw on image with API similar to HTML Canvas Context 2D.
 No native dependencies. Wrap 
-[PureImage](https://github.com/joshmarinacci/node-pureimage) library
+[PureImage](https://github.com/joshmarinacci/node-pureimage) library.
 
 ## Requirements
  - node >= 6
