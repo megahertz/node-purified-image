@@ -4,9 +4,9 @@
 
 ## Description
 
-Wrapper for Pure JS, which is implementation of an image drawing and
-encoding api, based on HTML Canvas. It simplifies PureImage usage.
-It has no native dependencies as well as PureImage.
+Load, save and draw on image with API similar to HTML Canvas Context 2D.
+No native dependencies. Wrap 
+[PureImage](https://github.com/joshmarinacci/node-pureimage) library
 
 ## Requirements
  - node >= 6
