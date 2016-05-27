@@ -37,6 +37,7 @@ const Image = require('purified-image');
 
 let image = new Image('img/template.png');
 image
+  .loadFont('/res/OpenSans.ttf')
   .draw(ctx => {
     ctx.fillStyle = '#000000';
     ctx.setFont('Open Sans', 20);
