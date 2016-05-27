@@ -1,6 +1,6 @@
 {
-  "name": "node-purified-image",
-  "version": "0.1.0",
+  "name": "purified-image",
+  "version": "0.1.1",
   "description": "Load, save and draw on image with API similar to HTML Canvas Context 2D. No native dependencies.",
   "main": "index.js",
   "scripts": {

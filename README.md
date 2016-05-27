@@ -1,6 +1,6 @@
 # node-purified-image
 [![Build Status](https://travis-ci.org/megahertz/node-purified-image.svg?branch=master)](https://travis-ci.org/megahertz/node-purified-image)
-[![npm version](https://badge.fury.io/js/node-purified-image.svg)](https://badge.fury.io/js/node-purified-image)
+[![npm version](https://badge.fury.io/js/purified-image.svg)](https://badge.fury.io/js/purified-image)
 
 ## Description
 
@@ -26,14 +26,14 @@ Current features:
 
 ## Installation
 
-Install with [npm](https://npmjs.org/package/node-purified-image):
+Install with [npm](https://npmjs.org/package/purified-image):
 
-    npm install node-purified-image
+    npm install purified-image
 
 ## Usage
 
 ```js
-const Image = require('node-purified-image');
+const Image = require('purified-image');
 
 let image = new Image('img/template.png');
 image

@@ -1,6 +1,6 @@
-## Image
-**Kind**: global class  
+## Image  
 
+<a name="Image"></a>
 * [Image](#Image)
     * [new Image([imagePath], [imageType])](#new_Image_new)
     * _instance_
