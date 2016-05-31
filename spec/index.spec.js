@@ -7,10 +7,12 @@ const stream = require('stream');
 const expect = require('chai').expect;
 const Image  = require('..');
 
+const memwatch = require('memwatch-next');
+
 
 const TEMPORARY = __dirname + '/temp/square.png';
 
-describe('Image class', () => {
+describe('Image', () => {
 
   it('should be created', () => {
     expect(instance()).to.be.instanceOf(Image);
@@ -97,6 +99,37 @@ describe('Image class', () => {
       }).catch(e => done(e));
   });
 
+  it('should emit events', done => {
+    const image = instance();
+
+    let isImageLoaded = false;
+    let isFontLoaded  = false;
+    let isLoaded      = false;
+    let isEncoded     = false;
+
+    image.on('image-loaded', () => isImageLoaded = true);
+    image.on('font-loaded',  () => isFontLoaded = true);
+    image.on('loaded',       () => isLoaded = true);
+    image.on('encoded',      () => isEncoded = true);
+
+    image
+      .loadFont(__dirname + '/res/OpenSans-Regular.ttf')
+      .draw((ctx) => {
+        ctx.fillStyle = '#ff00ff';
+        ctx.setFont('Open Sans Regular', 20);
+        ctx.fillText('test', 30, 30);
+      })
+      .toBuffer()
+      .then(() => {
+        expect(isImageLoaded).to.be.true;
+        expect(isFontLoaded).to.be.true;
+        expect(isLoaded).to.be.true;
+        expect(isEncoded).to.be.true;
+        done();
+      })
+      .catch(e => done(e));
+  });
+
 });
 
 describe('Scenarios', () => {
@@ -119,6 +152,50 @@ describe('Scenarios', () => {
       })
       .catch(e => done(e));
   });
+});
+
+describe('Image performance', () => {
+  it('should not have memory leaks', function(done) {
+    this.timeout(5000);
+
+    const image = new Image(__dirname + '/res/nodejs.png');
+    let hd;
+
+    image.on('loaded', () => {
+      hd = new memwatch.HeapDiff();
+    });
+
+    memwatch.on('leak', function(info) {
+      console.log(info);
+      done(['Memory leak Found a memory leak']);
+    });
+
+    const count = 50;
+    for (let i = 0; i < count; i++) {
+      drawToBuffer(image.copy(), (e) => {
+        if (e) {
+          done(e);
+          return;
+        }
+        if (i >= count - 1) {
+          const diff = hd.end();
+          const memoryDiff = diff.after['size_bytes'] - diff.before['size_bytes'];
+          expect(memoryDiff).to.be.not.greaterThan(2 * 1024);
+          done();
+        }
+      });
+    }
+  });
+
+  function drawToBuffer(image, cb) {
+    image
+      .draw((ctx) => {
+        ctx.setPixeli32(32, 20, 0x970097FF);
+      })
+      .toBuffer()
+      .then(buffer => cb())
+      .catch(e => cb(e));
+  }
 });
 
 function instance() {

@@ -1,10 +1,16 @@
 'use strict';
 
-const fs     = require('fs');
-const path   = require('path');
-const stream = require('stream');
-const pImage = require('pureimage');
+const fs           = require('fs');
+const path         = require('path');
+const stream       = require('stream');
+const pImage       = require('pureimage');
+const EventEmitter = require('events').EventEmitter;
 
+
+const LoadState = {
+  IMAGE: 'image',
+  FONT:  'font'
+};
 
 /**
  * Steam that saves data to a buffer
@@ -43,14 +49,20 @@ class BufferReadable extends stream.Readable {
   }
 }
 
-class Image {
+class Image extends EventEmitter {
   /**
    * Optionally load a file
    * @param {string} [imagePath]
    * @param {string} [imageType]
    */
   constructor(imagePath, imageType = 'auto') {
+    super();
+
+    this._isImageLoaded = false;
+    this._isFontsLoaded = false;
+
     this._fontPromises = [];
+
     if (imagePath) {
       this.load(imagePath, imageType);
     }
@@ -71,7 +83,10 @@ class Image {
       if (imageType === 'jpg') {
         reject('Loading JPEG format is not supported by pureimage now');
       } else {
-        pImage.decodePNG(imageStream, img => resolve(img));
+        pImage.decodePNG(imageStream, image => {
+          this._updateLoadState(LoadState.IMAGE, image);
+          resolve(image);
+        });
       }
     });
 
@@ -92,7 +107,10 @@ class Image {
 
     this._fontPromises[fontName] = new Promise(resolve => {
       pauseConsole();
-      pImage.registerFont(fontPath, fontName).load(resolve);
+      pImage.registerFont(fontPath, fontName).load(() => {
+        this._updateLoadState(LoadState.FONT);
+        resolve();
+      });
       resumeConsole();
     });
     
@@ -179,7 +197,48 @@ class Image {
     return this._encode(stream, imageType);
   }
 
+  _updateLoadState(target, object) {
+    /**
+     * @event Image#image-loaded
+     * @param {Bitmap4BBP} image
+     */
+    /**
+     * @event Image#font-loaded
+     */
+    /**
+     * Fired when both image data and font are loaded
+     * @event Image#loaded
+     */
+
+    switch (target) {
+      case LoadState.IMAGE:
+        this.emit('image-loaded', object);
+        this._isImageLoaded = true;
+        break;
+      case LoadState.FONT:
+        this.emit('font-loaded');
+        this._isFontsLoaded = true;
+        break;
+      default:
+        throw new Error(`Unknown load target ${target}`);
+    }
+
+    if (!this._isImageLoaded) {
+      return;
+    }
+
+    if (this._isFontsLoaded || !this._fontPromises.length) {
+      this.emit('loaded');
+    }
+  }
+
   _encode(stream, imageType = 'png') {
+    /**
+     * Fired when the image has been encoded (to buffer or to file)
+     * @event Image#encoded
+     */
+
+    var self = this;
     return this._imgPromise.then(img => {
       return new Promise((resolve, reject) => {
         if ('jpg' === imageType) {
@@ -191,7 +250,7 @@ class Image {
           if (err) {
             reject(err);
           } else {
-            stream.img = img;
+            self.emit('encoded');
             resolve(stream);
           }
         }

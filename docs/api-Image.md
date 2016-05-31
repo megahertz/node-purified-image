@@ -1,6 +1,5 @@
-## Image  
+## Image
 
-<a name="Image"></a>
 * [Image](#Image)
     * [new Image([imagePath], [imageType])](#new_Image_new)
     * _instance_
@@ -11,6 +10,10 @@
         * [.toBuffer([imageType])](#Image+toBuffer) ⇒ <code>Promise.&lt;Buffer&gt;</code>
         * [.fromBuffer(buffer, [imageType])](#Image+fromBuffer) ⇒ <code>[Image](#Image)</code>
         * [.save(imagePath, [imageType])](#Image+save) ⇒ <code>Promise.&lt;stream.Writable&gt;</code>
+        * ["image-loaded" (image)](#Image+event_image-loaded)
+        * ["font-loaded"](#Image+event_font-loaded)
+        * ["loaded"](#Image+event_loaded)
+        * ["encoded"](#Image+event_encoded)
     * _inner_
         * [~drawCallback](#Image..drawCallback) : <code>function</code>
 
@@ -102,6 +105,31 @@ Save image data to file
 | imagePath | <code>string</code> |  | 
 | [imageType] | <code>string</code> | <code>&quot;auto&quot;</code> | 
 
+<a name="Image+event_image-loaded"></a>
+
+### "image-loaded" (image)
+**Kind**: event emitted by <code>[Image](#Image)</code>  
+
+| Param | Type |
+| --- | --- |
+| image | <code>Bitmap4BBP</code> | 
+
+<a name="Image+event_font-loaded"></a>
+
+### "font-loaded"
+**Kind**: event emitted by <code>[Image](#Image)</code>  
+<a name="Image+event_loaded"></a>
+
+### "loaded"
+Fired when both image data and font are loaded
+
+**Kind**: event emitted by <code>[Image](#Image)</code>  
+<a name="Image+event_encoded"></a>
+
+### "encoded"
+Fired when the image has been encoded (to buffer or to file)
+
+**Kind**: event emitted by <code>[Image](#Image)</code>  
 <a name="Image..drawCallback"></a>
 
 ### Image~drawCallback : <code>function</code>
