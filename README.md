@@ -44,7 +44,7 @@ image
     ctx.fillText('example', 30, 30);
   })
   .save('out.jpg')
-  .then(() => console.log('saved');
+  .then(() => console.log('saved'));
 ```
     
 ## API
