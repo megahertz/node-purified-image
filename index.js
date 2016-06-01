@@ -83,9 +83,9 @@ class Image extends EventEmitter {
       if (imageType === 'jpg') {
         reject('Loading JPEG format is not supported by pureimage now');
       } else {
-        pImage.decodePNG(imageStream, image => {
-          this._updateLoadState(LoadState.IMAGE, image);
-          resolve(image);
+        pImage.decodePNG(imageStream, bitmap => {
+          this._updateLoadState(LoadState.IMAGE, bitmap);
+          resolve(bitmap);
         });
       }
     });
@@ -123,13 +123,44 @@ class Image extends EventEmitter {
    */
   copy() {
     const image = new this.constructor();
-    image._imgPromise = this._imgPromise.then(img => {
-      let imgCopy = new img.constructor(img.width, img.height);
-      imgCopy._buffer = Buffer.from(img._buffer);
-      return imgCopy;
-    });
+    image._imgPromise = this._imgPromise
+      .then(bitmap => {
+        let copy = new bitmap.constructor(bitmap.width, bitmap.height);
+        copy._buffer = Buffer.from(bitmap._buffer);
+        return copy;
+      })
+      .catch(e => process.nextTick(() => { throw e; }));
     image._fontPromises = this._fontPromises;
     return image;
+  }
+
+  /**
+   * This callback is called when a all resources are loaded
+   * @callback Image~readyCallback
+   * @param {Bitmap4BBP}  image
+   * @return {Bitmap4BBP} image
+   */
+
+  /**
+   * Shortcut for handling loaded event
+   * @param {Image~readyCallback} callback
+   * @param {Boolean} [modifyImage] Is an image will be modified in a callback
+   */
+  ready(callback, modifyImage) {
+    let promises = [this._imgPromise].concat(
+      Object.keys(this._fontPromises).map((k) => this._fontPromises[k])
+    );
+    let newPromise = Promise.all(promises)
+      .then(values => {
+        return callback(values[0]);
+      })
+      .catch(e => process.nextTick(() => { throw e; }));
+
+    if (modifyImage) {
+      this._imgPromise = newPromise;
+    }
+
+    return this;
   }
 
   /**
@@ -144,18 +175,36 @@ class Image extends EventEmitter {
    * @returns {Image}
    */
   draw(callback) {
-    let promises = [this._imgPromise].concat(
-      Object.keys(this._fontPromises).map((k) => this._fontPromises[k])
-    );
-    this._imgPromise = Promise.all(promises).then(values => {
-      /** @type {Bitmap4BBP} */
-      let img = values[0];
-      let ctx = img.getContext('2d');
+    this.ready(bitmap => {
+      let ctx = bitmap.getContext('2d');
       // Now pureimage doesn't render font without this
       ctx.USE_FONT_GLYPH_CACHING = false;
       callback(ctx);
-      return img;
-    }).catch(e => { throw e; });
+      return bitmap;
+    }, true);
+
+    return this;
+  }
+
+  /**
+   * Change canvas size of the current image
+   * @param {Number} width
+   * @param {Number} height
+   * @returns {Image}
+   */
+  resize(width, height) {
+    this.ready(bitmap => {
+      /** @type Bitmap4BBP */
+      const resized = pImage.make(width, height, {
+        fillval: 0x00000000
+      });
+
+      const ctx = resized.getContext('2d');
+      ctx.mode = 'REPLACE';
+      ctx.drawImage(bitmap, 0, 0);
+      return resized;
+    }, true);
+
     return this;
   }
 
@@ -166,7 +215,9 @@ class Image extends EventEmitter {
    */
   toBuffer(imageType = 'png') {
     var stream = new BufferWritable();
-    return this._encode(stream, imageType).then(buffer => buffer.buffer);
+    return this._encode(stream, imageType)
+      .then(buffer => buffer.buffer)
+      .catch(e => process.nextTick(() => { throw e; }));
   }
 
   /**
@@ -181,7 +232,7 @@ class Image extends EventEmitter {
       if (imageType === 'jpg') {
         reject('Loading JPEG format is not supported by pureimage now');
       } else {
-        pImage.decodePNG(imageStream, img => resolve(img));
+        pImage.decodePNG(imageStream, bmp => resolve(bmp));
       }
     });
     return this;
@@ -239,14 +290,13 @@ class Image extends EventEmitter {
      * Fired when the image has been encoded (to buffer or to file)
      * @event Image#encoded
      */
-
-    var self = this;
-    return this._imgPromise.then(img => {
+    const self = this;
+    return this._imgPromise.then(bitmap => {
       return new Promise((resolve, reject) => {
         if ('jpg' === imageType) {
-          pImage.encodeJPEG(img, stream, done);
+          pImage.encodeJPEG(bitmap, stream, done);
         } else {
-          pImage.encodePNG(img, stream, done);
+          pImage.encodePNG(bitmap, stream, done);
         }
         function done(err) {
           if (err) {

@@ -6,7 +6,9 @@
         * [.load(imagePath, imageType)](#Image+load) ⇒ <code>[Image](#Image)</code>
         * [.loadFont(fontPath, [fontName])](#Image+loadFont)
         * [.copy()](#Image+copy) ⇒
+        * [.ready(callback, [modifyImage])](#Image+ready)
         * [.draw(callback)](#Image+draw) ⇒ <code>[Image](#Image)</code>
+        * [.resize(width, height)](#Image+resize) ⇒ <code>[Image](#Image)</code>
         * [.toBuffer([imageType])](#Image+toBuffer) ⇒ <code>Promise.&lt;Buffer&gt;</code>
         * [.fromBuffer(buffer, [imageType])](#Image+fromBuffer) ⇒ <code>[Image](#Image)</code>
         * [.save(imagePath, [imageType])](#Image+save) ⇒ <code>Promise.&lt;stream.Writable&gt;</code>
@@ -15,6 +17,7 @@
         * ["loaded"](#Image+event_loaded)
         * ["encoded"](#Image+event_encoded)
     * _inner_
+        * [~readyCallback](#Image..readyCallback) ⇒ <code>Bitmap4BBP</code>
         * [~drawCallback](#Image..drawCallback) : <code>function</code>
 
 <a name="new_Image_new"></a>
@@ -59,6 +62,18 @@ Make a copy of the current image
 
 **Kind**: instance method of <code>[Image](#Image)</code>  
 **Returns**: Image  
+<a name="Image+ready"></a>
+
+### image.ready(callback, [modifyImage])
+Shortcut for handling loaded event
+
+**Kind**: instance method of <code>[Image](#Image)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| callback | <code>[readyCallback](#Image..readyCallback)</code> |  |
+| [modifyImage] | <code>Boolean</code> | Is an image will be modified in a callback |
+
 <a name="Image+draw"></a>
 
 ### image.draw(callback) ⇒ <code>[Image](#Image)</code>
@@ -69,6 +84,18 @@ Draw on image canvas
 | Param | Type |
 | --- | --- |
 | callback | <code>[drawCallback](#Image..drawCallback)</code> | 
+
+<a name="Image+resize"></a>
+
+### image.resize(width, height) ⇒ <code>[Image](#Image)</code>
+Change canvas size of the current image
+
+**Kind**: instance method of <code>[Image](#Image)</code>  
+
+| Param | Type |
+| --- | --- |
+| width | <code>Number</code> | 
+| height | <code>Number</code> | 
 
 <a name="Image+toBuffer"></a>
 
@@ -130,6 +157,18 @@ Fired when both image data and font are loaded
 Fired when the image has been encoded (to buffer or to file)
 
 **Kind**: event emitted by <code>[Image](#Image)</code>  
+<a name="Image..readyCallback"></a>
+
+### Image~readyCallback ⇒ <code>Bitmap4BBP</code>
+This callback is called when a all resources are loaded
+
+**Kind**: inner typedef of <code>[Image](#Image)</code>  
+**Returns**: <code>Bitmap4BBP</code> - image  
+
+| Param | Type |
+| --- | --- |
+| image | <code>Bitmap4BBP</code> | 
+
 <a name="Image..drawCallback"></a>
 
 ### Image~drawCallback : <code>function</code>

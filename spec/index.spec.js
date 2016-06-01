@@ -130,6 +130,19 @@ describe('Image', () => {
       .catch(e => done(e));
   });
 
+  it('should resize', done => {
+    instance().draw(srcCtx => {
+      instance()
+        .resize(400, 400)
+        .draw(ctx => {
+          expect(ctx.getPixeli32(32, 20)).to.equal(srcCtx.getPixeli32(32, 20));
+          expect(ctx.getPixeli32(32, 17)).to.equal(srcCtx.getPixeli32(32, 17));
+          expect(ctx.getPixeli32(300, 300)).to.equal(0x00000000);
+          done();
+        });
+    });
+  });
+
 });
 
 describe('Scenarios', () => {
@@ -145,8 +158,8 @@ describe('Scenarios', () => {
       .then(buffer => {
         instance().fromBuffer(buffer)
           .draw(ctx => {
-          expect(ctx.getPixeli32(32, 20), 0xFF00FFFF);
-          expect(ctx.getPixeli32(32, 17), 0x970097FF);
+          expect(ctx.getPixeli32(32, 20)).to.equal(0xFF00FFFF);
+          expect(ctx.getPixeli32(32, 17)).to.equal(0x970097FF);
           done();
         });
       })
