@@ -61,7 +61,7 @@ class Image extends EventEmitter {
     this._isImageLoaded = false;
     this._isFontsLoaded = false;
 
-    this._fontPromises = [];
+    this._fontPromises = {};
 
     if (imagePath) {
       this.load(imagePath, imageType);
@@ -144,7 +144,9 @@ class Image extends EventEmitter {
    * @returns {Image}
    */
   draw(callback) {
-    var promises = [this._imgPromise].concat(this._fontPromises);
+    let promises = [this._imgPromise].concat(
+      Object.keys(this._fontPromises).map((k) => this._fontPromises[k])
+    );
     this._imgPromise = Promise.all(promises).then(values => {
       /** @type {Bitmap4BBP} */
       let img = values[0];
