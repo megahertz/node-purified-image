@@ -1,6 +1,6 @@
 {
   "name": "purified-image",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Load, save and draw on image with API similar to HTML Canvas Context 2D. No native dependencies.",
   "main": "index.js",
   "scripts": {
@@ -36,7 +36,7 @@
   },
   "homepage": "https://github.com/megahertz/node-purified-image#readme",
   "dependencies": {
-    "pureimage": "^0.0.13"
+    "pureimage-beta": "0.0.14"
   },
   "engines": {
     "node": ">=6.0"
