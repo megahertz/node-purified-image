@@ -36,7 +36,7 @@
   },
   "homepage": "https://github.com/megahertz/node-purified-image#readme",
   "dependencies": {
-    "pureimage-beta": "0.0.14"
+    "pureimage-beta": "*"
   },
   "engines": {
     "node": ">=6.0"
