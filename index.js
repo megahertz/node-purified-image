@@ -137,7 +137,8 @@ class Image extends EventEmitter {
   /**
    * This callback is called when a all resources are loaded
    * @callback Image~readyCallback
-   * @param {Bitmap4BBP}  image
+   * @param {Bitmap4BBP} [image]
+   * @param {...Object}  [fonts]
    * @return {Bitmap4BBP} image
    */
 
@@ -152,7 +153,7 @@ class Image extends EventEmitter {
     );
     let newPromise = Promise.all(promises)
       .then(values => {
-        return callback(values[0]);
+        return callback.apply(null, values);
       })
       .catch(e => process.nextTick(() => { throw e; }));
 
