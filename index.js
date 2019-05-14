@@ -6,10 +6,9 @@ const stream       = require('stream');
 const pImage       = require('pureimage');
 const EventEmitter = require('events').EventEmitter;
 
-
 const LoadState = {
   IMAGE: 'image',
-  FONT:  'font'
+  FONT:  'font',
 };
 
 /**
@@ -18,13 +17,10 @@ const LoadState = {
 class BufferWritable extends stream.Writable {
   constructor() {
     super();
-    //noinspection JSUnresolvedVariable
-    this.buffer = new Buffer([]);
+    this.buffer = Buffer.alloc(0);
   }
 
-  //noinspection JSUnusedGlobalSymbols,JSUnusedLocalSymbols
   _write(chunk, encoding, callback) {
-    //noinspection JSUnresolvedVariable
     this.buffer = Buffer.concat([this.buffer, chunk]);
     callback();
   }
@@ -36,15 +32,11 @@ class BufferWritable extends stream.Writable {
 class BufferReadable extends stream.Readable {
   constructor(buffer) {
     super();
-    //noinspection JSUnresolvedVariable
     this.buffer = buffer;
   }
 
-  //noinspection JSUnusedGlobalSymbols
   _read() {
-    //noinspection JSUnresolvedFunction
     this.push(this.buffer);
-    //noinspection JSUnresolvedFunction
     this.push(null);
   }
 }
@@ -53,10 +45,13 @@ class Image extends EventEmitter {
   /**
    * Optionally load a file
    * @param {string} [imagePath]
-   * @param {string} [imageType]
+   * @param {string} [imageType=auto]
+   * @param {boolean} [silent=false]
    */
-  constructor(imagePath, imageType = 'auto') {
+  constructor(imagePath, imageType = 'auto', silent = false) {
     super();
+
+    this.silent = silent;
 
     this._isImageLoaded = false;
     this._isFontsLoaded = false;
@@ -65,6 +60,15 @@ class Image extends EventEmitter {
 
     if (imagePath) {
       this.load(imagePath, imageType);
+    }
+
+    this.error = this.error.bind(this);
+  }
+
+  error(e) {
+    this.emit('error', e);
+    if (!this.silent) {
+      console.error(e);
     }
   }
 
@@ -76,18 +80,16 @@ class Image extends EventEmitter {
    */
   load(imagePath, imageType = 'auto') {
     imageType = Image._getTypeByPath(imagePath, imageType);
+    const imageStream = fs.createReadStream(imagePath);
 
-    this._imgPromise = new Promise((resolve, reject) => {
-      const imageStream = fs.createReadStream(imagePath);
+    if (imageType === 'jpg') {
+      this._imgPromise = pImage.decodeJPEGFromStream(imageStream);
+    } else {
+      this._imgPromise = pImage.decodePNGFromStream(imageStream);
+    }
 
-      if (imageType === 'jpg') {
-        reject('Loading JPEG format is not supported by pureimage now');
-      } else {
-        pImage.decodePNG(imageStream, bitmap => {
-          this._updateLoadState(LoadState.IMAGE, bitmap);
-          resolve(bitmap);
-        });
-      }
+    this._imgPromise.then((bitmap) => {
+      this._updateLoadState(LoadState.IMAGE, bitmap);
     });
 
     return this;
@@ -105,15 +107,13 @@ class Image extends EventEmitter {
         .replace(/([a-z])[-_]([A-Z])/g, '$1 $2');
     }
 
-    this._fontPromises[fontName] = new Promise(resolve => {
-      pauseConsole();
+    this._fontPromises[fontName] = new Promise((resolve) => {
       pImage.registerFont(fontPath, fontName).load(() => {
         this._updateLoadState(LoadState.FONT);
         resolve();
       });
-      resumeConsole();
     });
-    
+
     return this;
   }
 
@@ -124,12 +124,12 @@ class Image extends EventEmitter {
   copy() {
     const image = new this.constructor();
     image._imgPromise = this._imgPromise
-      .then(bitmap => {
-        let copy = new bitmap.constructor(bitmap.width, bitmap.height);
-        copy._buffer = Buffer.from(bitmap._buffer);
+      .then((bitmap) => {
+        const copy = new bitmap.constructor(bitmap.width, bitmap.height);
+        copy.data = Buffer.from(bitmap.data);
         return copy;
       })
-      .catch(e => process.nextTick(() => { throw e; }));
+      .catch(this.error);
     image._fontPromises = this._fontPromises;
     return image;
   }
@@ -137,9 +137,9 @@ class Image extends EventEmitter {
   /**
    * This callback is called when a all resources are loaded
    * @callback Image~readyCallback
-   * @param {Bitmap4BBP} [image]
+   * @param {Bitmap} [image]
    * @param {...Object}  [fonts]
-   * @return {Bitmap4BBP} image
+   * @return {Bitmap} image
    */
 
   /**
@@ -148,14 +148,12 @@ class Image extends EventEmitter {
    * @param {Boolean} [modifyImage] Is an image will be modified in a callback
    */
   ready(callback, modifyImage) {
-    let promises = [this._imgPromise].concat(
-      Object.keys(this._fontPromises).map((k) => this._fontPromises[k])
+    const promises = [this._imgPromise].concat(
+      Object.values(this._fontPromises)
     );
-    let newPromise = Promise.all(promises)
-      .then(values => {
-        return callback.apply(null, values);
-      })
-      .catch(e => process.nextTick(() => { throw e; }));
+    const newPromise = Promise.all(promises)
+      .then(values => callback(...values))
+      .catch(this.error);
 
     if (modifyImage) {
       this._imgPromise = newPromise;
@@ -167,7 +165,7 @@ class Image extends EventEmitter {
   /**
    * This callback is called when a pureimage canvas is ready
    * @callback Image~drawCallback
-   * @param {Bitmap4BBPContext} ctx
+   * @param {Context} ctx
    */
 
   /**
@@ -176,8 +174,8 @@ class Image extends EventEmitter {
    * @returns {Image}
    */
   draw(callback) {
-    this.ready(bitmap => {
-      let ctx = bitmap.getContext('2d');
+    this.ready((bitmap) => {
+      const ctx = bitmap.getContext('2d');
       // Now pureimage doesn't render font without this
       ctx.USE_FONT_GLYPH_CACHING = false;
       callback(ctx);
@@ -194,10 +192,10 @@ class Image extends EventEmitter {
    * @returns {Image}
    */
   resize(width, height) {
-    this.ready(bitmap => {
-      /** @type Bitmap4BBP */
+    this.ready((bitmap) => {
+      /** @type Bitmap */
       const resized = pImage.make(width, height, {
-        fillval: 0x00000000
+        fillval: 0x00000000,
       });
 
       const ctx = resized.getContext('2d');
@@ -215,10 +213,9 @@ class Image extends EventEmitter {
    * @returns {Promise.<Buffer>}
    */
   toBuffer(imageType = 'png') {
-    var stream = new BufferWritable();
-    return this._encode(stream, imageType)
+    return this._encode(new BufferWritable(), imageType)
       .then(buffer => buffer.buffer)
-      .catch(e => process.nextTick(() => { throw e; }));
+      .catch(this.error);
   }
 
   /**
@@ -228,14 +225,13 @@ class Image extends EventEmitter {
    * @returns {Image}
    */
   fromBuffer(buffer, imageType = 'png') {
-    this._imgPromise = new Promise((resolve, reject) => {
-      const imageStream = new BufferReadable(buffer);
-      if (imageType === 'jpg') {
-        reject('Loading JPEG format is not supported by pureimage now');
-      } else {
-        pImage.decodePNG(imageStream, bmp => resolve(bmp));
-      }
-    });
+    const imageStream = new BufferReadable(buffer);
+    if (imageType === 'jpg') {
+      this._imgPromise = pImage.decodeJPEGFromStream(imageStream);
+    } else {
+      this._imgPromise = pImage.decodePNGFromStream(imageStream);
+    }
+
     return this;
   }
 
@@ -247,14 +243,13 @@ class Image extends EventEmitter {
    */
   save(imagePath, imageType = 'auto') {
     imageType = Image._getTypeByPath(imagePath, imageType);
-    var stream = fs.createWriteStream(imagePath);
-    return this._encode(stream, imageType);
+    return this._encode(fs.createWriteStream(imagePath), imageType);
   }
 
   _updateLoadState(target, object) {
     /**
      * @event Image#image-loaded
-     * @param {Bitmap4BBP} image
+     * @param {Bitmap} image
      */
     /**
      * @event Image#font-loaded
@@ -286,49 +281,30 @@ class Image extends EventEmitter {
     }
   }
 
-  _encode(stream, imageType = 'png') {
-    /**
-     * Fired when the image has been encoded (to buffer or to file)
-     * @event Image#encoded
-     */
-    const self = this;
-    return this._imgPromise.then(bitmap => {
-      return new Promise((resolve, reject) => {
-        if ('jpg' === imageType) {
-          pImage.encodeJPEG(bitmap, stream, done);
-        } else {
-          pImage.encodePNG(bitmap, stream, done);
-        }
-        function done(err) {
-          if (err) {
-            reject(err);
-          } else {
-            self.emit('encoded');
-            resolve(stream);
-          }
-        }
-      });
-    });
+  async _encode(writeStream, imageType = 'png') {
+    const bitmap = await this._imgPromise;
+
+    if (imageType === 'jpg') {
+      await pImage.encodeJPEGToStream(bitmap, writeStream);
+    } else {
+      await pImage.encodePNGToStream(bitmap, writeStream);
+    }
+
+    this.emit('encoded');
+
+    return writeStream;
   }
-  
+
   static _getTypeByPath(imagePath, imageType = 'auto') {
     if (['png, jpg'].indexOf(imageType) === -1) {
       if (imagePath.endsWith('jpg') || imagePath.endsWith('jpeg')) {
         return 'jpg';
-      } else {
-        return 'png';
       }
+
+      return 'png';
     }
+
     return imageType;
   }
 }
 module.exports = Image;
-
-const log = console.log;
-function pauseConsole() {
-  console.log = () => {};
-}
-
-function resumeConsole() {
-  console.log = log;
-}

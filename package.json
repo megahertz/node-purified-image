@@ -1,22 +1,16 @@
 {
   "name": "purified-image",
-  "version": "0.1.10",
+  "version": "0.2.0",
   "description": "Load, save and draw on image with API similar to HTML Canvas Context 2D. No native dependencies.",
   "main": "index.js",
   "scripts": {
-    "test": "npm run jshint && npm run jscs && npm run mocha",
-    "mocha": "node_modules/.bin/mocha ./spec",
-    "jscs": "node_modules/.bin/jscs .",
-    "jshint": "node_modules/.bin/jshint --exclude ./node_modules . --verbose",
-    "jsdoc": "node_modules/.bin/jsdoc2md index.js | sed -e '1,27d;29d'> docs/api-Image.md"
+    "lint": "eslint '**/*.js' --ignore-pattern 'node_modules'",
+    "test": "npm run lint && humile",
+    "jsdoc": "jsdoc2md index.js | sed -e '1,27d;29d'> docs/api-Image.md"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/megahertz/node-purified-image.git"
-  },
+  "repository": "megahertz/node-purified-image",
   "files": [
-    "index.js",
-    "README.md"
+    "index.js"
   ],
   "keywords": [
     "node",
@@ -31,23 +25,19 @@
   ],
   "author": "Alexey Prokhorov",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/megahertz/node-purified-image/issues"
-  },
+  "bugs": "https://github.com/megahertz/node-purified-image/issues",
   "homepage": "https://github.com/megahertz/node-purified-image#readme",
   "dependencies": {
-    "pureimage": "0.0.13"
+    "pureimage": "^0.1.6"
   },
   "engines": {
-    "node": ">=6.0"
+    "node": ">=8.0"
   },
   "devDependencies": {
-    "chai": "*",
-    "jscs": "*",
-    "jsdoc-to-markdown": "^1.3.6",
-    "jshint": "*",
-    "jshint-reporter-jscs": "*",
-    "memwatch-next": "^0.3.0",
-    "mocha": "*"
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.17.2",
+    "humile": "^0.2.0",
+    "jsdoc-to-markdown": "^5.0.0"
   }
 }
