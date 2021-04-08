@@ -78,12 +78,10 @@ declare class Context {
   fillStyle: string;
 
   /**
-   * The current text style being used when drawing text.
+   * The current text style being used when drawing text in
+   * form 'fontSize fontFace'
    */
-  font: {
-    size: number;
-    family: string;
-  };
+  font: string;
 
   /**
    * The alpha value that is applied to shapes and images before they are

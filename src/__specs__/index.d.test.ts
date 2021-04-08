@@ -6,7 +6,7 @@ image
   .loadFont('/res/OpenSans.ttf')
   .draw(ctx => {
     ctx.fillStyle = '#000000';
-    ctx.font = { family: 'Open Sans', size: 20 };
+    ctx.font = '20 Open Sans';
     ctx.fillText('example', 30, 30);
   })
   .save('out.jpg')

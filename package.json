@@ -32,7 +32,7 @@
   "bugs": "https://github.com/megahertz/node-purified-image/issues",
   "homepage": "https://github.com/megahertz/node-purified-image#readme",
   "dependencies": {
-    "pureimage": "^0.1.6"
+    "pureimage": "^0.3.2"
   },
   "engines": {
     "node": ">=8.0"

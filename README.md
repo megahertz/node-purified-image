@@ -4,25 +4,29 @@
 
 ## Description
 
-Load, save and draw on image with API similar to HTML Canvas Context 2D.
+Load, save and draw with API similar to HTML Canvas Context 2D.
 No native dependencies. Wrap 
 [PureImage](https://github.com/joshmarinacci/node-pureimage) library.
 
 ## Requirements
- - node >= 6
+ - node >= 8
 
 ## PureImage
 
-PureImage is a pure JavaScript implementation of an image drawing and encoding
+PureImage is a pure JavaScript implementation of image drawing and encoding
 API, based on HTML Canvas, for NodeJS. It has no native dependencies.  
 
 Current features:
 
-* set pixels
-* stroke and fill paths (rectangles, lines, quadratic curves)
-* copy images
-* export to PNG
-* render text (no bold or italics yet)
+ - set pixels
+ - stroke and fill paths (rectangles, lines, quadratic curves, bezier curves, arcs/circles)
+ - copy and scale images (nearest neighbor)
+ - import and export JPG and PNG from streams using promises
+ - render basic text (no bold or italics yet)
+ - anti-aliased strokes and fills
+ - transforms
+ - standard globalAlpha and rgba() alpha compositing
+ - clip shapes
 
 ## Installation
 
@@ -40,7 +44,7 @@ image
   .loadFont('/res/OpenSans.ttf')
   .draw(ctx => {
     ctx.fillStyle = '#000000';
-    ctx.setFont('Open Sans', 20);
+    ctx.font = '20 Open Sans';
     ctx.fillText('example', 30, 30);
   })
   .save('out.jpg')

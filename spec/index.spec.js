@@ -158,7 +158,7 @@ describe('Scenarios', () => {
         instance().fromBuffer(buffer)
           .draw((ctx) => {
             expect(ctx.bitmap.getPixelRGBA(32, 20)).toBe(0xFF00FFFF);
-            expect(ctx.bitmap.getPixelRGBA(32, 17)).toBe(0x970097C1);
+            expect(ctx.bitmap.getPixelRGBA(32, 17)).toBe(0x970097FF);
             done();
           });
       })
