@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint '**/*.js' --ignore-pattern 'node_modules'",
-    "test": "npm run lint && humile",
+    "test": "humile && npm run lint",
     "jsdoc": "jsdoc2md index.js | sed -e '1,27d;29d'> docs/api-Image.md"
   },
   "repository": "megahertz/node-purified-image",
@@ -34,10 +34,10 @@
     "node": ">=8.0"
   },
   "devDependencies": {
-    "eslint": "^5.16.0",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.17.2",
-    "humile": "^0.2.0",
-    "jsdoc-to-markdown": "^5.0.0"
+    "eslint": "^7.23.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "humile": "^0.3.2",
+    "jsdoc-to-markdown": "^7.0.1"
   }
 }

@@ -1,14 +1,14 @@
 'use strict';
 
-const fs           = require('fs');
-const path         = require('path');
-const stream       = require('stream');
-const pImage       = require('pureimage');
+const fs = require('fs');
+const path = require('path');
+const stream = require('stream');
+const pImage = require('pureimage');
 const EventEmitter = require('events').EventEmitter;
 
 const LoadState = {
   IMAGE: 'image',
-  FONT:  'font',
+  FONT: 'font',
 };
 
 /**
@@ -68,6 +68,7 @@ class Image extends EventEmitter {
   error(e) {
     this.emit('error', e);
     if (!this.silent) {
+      // eslint-disable-next-line no-console
       console.error(e);
     }
   }
@@ -152,7 +153,7 @@ class Image extends EventEmitter {
       Object.values(this._fontPromises)
     );
     const newPromise = Promise.all(promises)
-      .then(values => callback(...values))
+      .then((values) => callback(...values))
       .catch(this.error);
 
     if (modifyImage) {
@@ -214,7 +215,7 @@ class Image extends EventEmitter {
    */
   toBuffer(imageType = 'png') {
     return this._encode(new BufferWritable(), imageType)
-      .then(buffer => buffer.buffer)
+      .then((buffer) => buffer.buffer)
       .catch(this.error);
   }
 

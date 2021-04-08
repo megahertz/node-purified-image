@@ -1,10 +1,10 @@
 'use strict';
 
 const { describe, expect, it } = require('humile');
-const fs                       = require('fs');
-const path                     = require('path');
-const stream                   = require('stream');
-const Image                    = require('..');
+const fs = require('fs');
+const path = require('path');
+const stream = require('stream');
+const Image = require('..');
 
 const TEMPORARY = path.join(__dirname, 'temp/square.png');
 
@@ -54,7 +54,7 @@ describe('Image', () => {
         expect(s).toBe(ws);
         done();
       })
-      .catch(e => done(e));
+      .catch((e) => done(e));
   });
 
   it('should save to buffer', (done) => {
@@ -63,7 +63,7 @@ describe('Image', () => {
         expect(buffer.length).toBeGreaterThan(0);
         done();
       })
-      .catch(e => done(e));
+      .catch((e) => done(e));
   });
 
   it('should load from buffer', (done) => {
@@ -82,7 +82,7 @@ describe('Image', () => {
             done();
           });
       })
-      .catch(e => done(e));
+      .catch((e) => done(e));
   });
 
   it('should save a png', (done) => {
@@ -93,21 +93,21 @@ describe('Image', () => {
           expect(err).toBe(null);
           return fs.unlink(TEMPORARY, done);
         });
-      }).catch(e => done(e));
+      }).catch((e) => done(e));
   });
 
   it('should emit events', (done) => {
     const image = instance();
 
     let isImageLoaded = false;
-    let isFontLoaded  = false;
-    let isLoaded      = false;
-    let isEncoded     = false;
+    let isFontLoaded = false;
+    let isLoaded = false;
+    let isEncoded = false;
 
     image.on('image-loaded', () => isImageLoaded = true);
-    image.on('font-loaded',  () => isFontLoaded = true);
-    image.on('loaded',       () => isLoaded = true);
-    image.on('encoded',      () => isEncoded = true);
+    image.on('font-loaded', () => isFontLoaded = true);
+    image.on('loaded', () => isLoaded = true);
+    image.on('encoded', () => isEncoded = true);
 
     image
       .loadFont(path.join(__dirname, 'res/OpenSans-Regular.ttf'))
@@ -124,7 +124,7 @@ describe('Image', () => {
         expect(isEncoded).toBe(true);
         done();
       })
-      .catch(e => done(e));
+      .catch((e) => done(e));
   });
 
   it('should resize', (done) => {
@@ -147,7 +147,7 @@ describe('Image', () => {
 describe('Scenarios', () => {
   it('should write text', (done) => {
     instance()
-      .loadFont(path.join(__dirname,  'res/OpenSans-Regular.ttf'))
+      .loadFont(path.join(__dirname, 'res/OpenSans-Regular.ttf'))
       .draw((ctx) => {
         ctx.fillStyle = '#ff00ff';
         ctx.font = '20 Open Sans Regular';
@@ -162,10 +162,9 @@ describe('Scenarios', () => {
             done();
           });
       })
-      .catch(e => done(e));
+      .catch((e) => done(e));
   });
 });
-
 
 function instance() {
   return new Image(path.join(__dirname, 'res/square.png'));
