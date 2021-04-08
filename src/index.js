@@ -308,4 +308,6 @@ class Image extends EventEmitter {
     return imageType;
   }
 }
+
 module.exports = Image;
+module.exports.default = Image;

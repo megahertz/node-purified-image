@@ -2,15 +2,19 @@
   "name": "purified-image",
   "version": "0.2.0",
   "description": "Load, save and draw on image with API similar to HTML Canvas Context 2D. No native dependencies.",
-  "main": "index.js",
+  "main": "src/index.js",
+  "typings": "src/index.d.ts",
   "scripts": {
     "lint": "eslint '**/*.js' --ignore-pattern 'node_modules'",
-    "test": "humile && npm run lint",
-    "jsdoc": "jsdoc2md index.js | sed -e '1,27d;29d'> docs/api-Image.md"
+    "test": "humile && tsc && npm run lint",
+    "jsdoc": "jsdoc2md src/index.js | sed -e '1,27d;29d'> docs/api-Image.md",
+    "postversion": "git push && git push --tags",
+    "preversion": "npm run test",
+    "prepack": "npm run test"
   },
   "repository": "megahertz/node-purified-image",
   "files": [
-    "index.js"
+    "src/index.js"
   ],
   "keywords": [
     "node",
@@ -34,10 +38,12 @@
     "node": ">=8.0"
   },
   "devDependencies": {
+    "@types/node": "^14.14.37",
     "eslint": "^7.23.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
     "humile": "^0.3.2",
-    "jsdoc-to-markdown": "^7.0.1"
+    "jsdoc-to-markdown": "^7.0.1",
+    "typescript": "^4.2.4"
   }
 }
